@@ -1,0 +1,11 @@
+version: "3.9"
+services:
+  api:
+    build: ./server
+    container_name: renart_api
+    ports: ["8080:8080"]
+  web:
+    build: ./client
+    container_name: renart_web
+    ports: ["80:80"]
+    depends_on: [api]

@@ -1,0 +1,11 @@
+import express from "express";import cors from "cors";import helmet from "helmet";import morgan from "morgan";import fs from "fs";import path from "path";import { fileURLToPath } from "url";
+const __filename=fileURLToPath(import.meta.url);const __dirname=path.dirname(__filename);
+const app=express();app.use(helmet());app.use(morgan("tiny"));app.use(cors({origin:["http://localhost:5173"]}));
+function loadProducts(){try{const p=path.join(__dirname,"..","..","client","public","data","products.json");return JSON.parse(fs.readFileSync(p,"utf8"))}catch{return []}}
+app.get("/api/health",(_,res)=>res.json({ok:true}));
+app.get("/api/products",(req,res)=>{const gold=75;const q=String(req.query.q||"").toLowerCase();const minPrice=req.query.minPrice?Number(req.query.minPrice):undefined;const maxPrice=req.query.maxPrice?Number(req.query.maxPrice):undefined;const minPopularity=req.query.minPopularity?Number(req.query.minPopularity):undefined;const sort=String(req.query.sort||"price");const order=String(req.query.order||"asc");const page=Number(req.query.page||1);const perPage=Number(req.query.perPage||12);
+let rows=loadProducts().map((p,i)=>{const pop=Math.round(p.popularityScore*50)/10;const price=Number(((p.popularityScore+1)*p.weight*gold).toFixed(2));return{id:i+1,...p,popularity5:pop,priceUSD:price}});
+if(q)rows=rows.filter(r=>r.name.toLowerCase().includes(q));if(minPopularity!==undefined)rows=rows.filter(r=>r.popularity5>=minPopularity);if(minPrice!==undefined)rows=rows.filter(r=>r.priceUSD>=minPrice);if(maxPrice!==undefined)rows=rows.filter(r=>r.priceUSD<=maxPrice);
+const ord=order==='desc'?-1:1;rows.sort((a,b)=>{switch (sort){case'name':return a.name.localeCompare(b.name)*ord;case'popularity':return(a.popularity5-b.popularity5)*ord;case'weight':return(a.weight-b.weight)*ord;case'price':default:return(a.priceUSD-b.priceUSD)*ord}});
+const total=rows.length;const start=(page-1)*perPage;const items=rows.slice(start,start+perPage);res.json({meta:{total,page,perPage,goldPriceUSDPerGram:gold},items})});
+const port=process.env.PORT||8080;app.listen(port,()=>console.log("Dev API on http://localhost:"+port));

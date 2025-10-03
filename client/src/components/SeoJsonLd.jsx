@@ -1,0 +1,1 @@
+import React from'react';export default function SeoJsonLd({products=[]}){const json={"@context":"https://schema.org","@type":"ItemList","itemListElement":products.map((p,i)=>({"@type":"ListItem","position":i+1,"name":p.name}))};return <script type='application/ld+json' dangerouslySetInnerHTML={{__html:JSON.stringify(json)}}/>}

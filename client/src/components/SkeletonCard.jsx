@@ -1,0 +1,1 @@
+import React from'react';export default function SkeletonCard(){return(<div className='skeleton-card'><div className='skel-banner'/><div className='skel-line' style={{width:'60%'}}/><div className='skel-line' style={{width:'30%'}}/><div className='skel-line' style={{width:'40%'}}/></div>)}
